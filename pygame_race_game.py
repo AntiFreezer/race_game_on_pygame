@@ -1,4 +1,3 @@
-import math
 import pygame as py
 from random import choice, randint
 
@@ -18,15 +17,14 @@ FPS = 35
 class Traffic(py.sprite.Sprite):
     def __init__(self):
         py.sprite.Sprite.__init__(self)
-        img1 = py.image.load("/home/linuxlite/Templates/pygame car game/car traffic1.svg").convert()
-        img2 = py.image.load("/home/linuxlite/Templates/pygame car game/car traffic2.svg").convert()
+        img1 = "/home/linuxlite/Templates/pygame car game/car traffic1.svg"
+        img2 = "/home/linuxlite/Templates/pygame car game/car traffic2.svg"
         cars = [img1, img2]
-        self.image = choice(cars)
+        self.image = py.image.load(choice(cars))
         self.image.set_colorkey((0, 0, 0))
         self.image = py.transform.rotate(self.image, 270)
         self.image = py.transform.scale(self.image, (90, 180))
         self.rect = self.image.get_rect()
-        print()
         self.reset()
 
     def update(self):
@@ -85,17 +83,17 @@ class Player(py.sprite.Sprite):
                 self.rect.center = (x, y - self.stepvup)
             else:
                 self.rect.center = (x, self.rect.height / 2)
-        elif pk[py.K_DOWN]:
+        if pk[py.K_DOWN]:
             if y + self.rect.height / 2 + self.stepvdown < FrameHeight:
                 self.rect.center = (x, y + self.stepvdown)
             else:
                 self.rect.center = (x, FrameHeight - self.rect.height / 2)
-        elif pk[py.K_LEFT]:
+        if pk[py.K_LEFT]:
             if x - self.rect.width / 2 - self.stepgor > leftborder:
                 self.rect.center = (x - self.stepgor, y)
             else:
                 self.rect.center = (self.rect.width / 2 + leftborder, y)
-        elif pk[py.K_RIGHT]:
+        if pk[py.K_RIGHT]:
             if x + self.rect.width / 2 + self.stepgor < rightborder:
                 self.rect.center = (x + self.stepgor, y)
             else:
@@ -120,18 +118,23 @@ timecnt = 0
 bg = Backgound()
 while 1:
     clock.tick(FPS)
-
+    timecnt += 1
     for event in py.event.get():
         if event.type == py.QUIT:
             quit()
         if event.type == py.KEYDOWN:
             player.update()
 
-    # print(py.sprite.spritecollide(player, enemies, False))
-
-    if len(enemies.sprites()) < 4:
-
-        tr = pool.sprites().pop()
+    # print(py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.87)))
+    for i in range(len(enemies)):
+        for j in range(i, len(enemies)):
+            if enemies.sprites()[i].rect.colliderect(enemies.sprites()[j].rect):
+                enemies.sprites()[j].speed = enemies.sprites()[i].speed
+    #if trafhits:
+        #print(trafhits[0])
+        #trafhits[0].speed = trafhits[1].speed
+    if len(enemies.sprites()) < 4 and timecnt % FPS == 0:
+        tr = pool.sprites()[randint(0, len(pool.sprites()) - 1)]
         pool.remove(tr)
         all_sprites.add(tr)
         enemies.add(tr)
