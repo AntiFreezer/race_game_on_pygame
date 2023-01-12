@@ -71,6 +71,8 @@ class Player(py.sprite.Sprite):
         self.stepvup = 7
         self.stepvdown = 9
         self.stepgor = 6
+        self.blink = 0
+        self.health = 6
 
     def update(self):
         leftborder = 140
@@ -98,7 +100,25 @@ class Player(py.sprite.Sprite):
                 self.rect.center = (x + self.stepgor, y)
             else:
                 self.rect.center = (rightborder - self.rect.width / 2, y)
+        print(self.blink)
+        if self.blink > 0:
+            self.blink -= 1
+            if self.blink % 3 == 0:
+                self.image.set_alpha(0)
+            if self.blink % 6 == 0:
+                self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(255)
 
+    def crash(self):
+        if self.blink > 0:
+            return
+        self.blink = 2 * FPS
+        self.health -= 1
+
+
+def end_game():
+    pass
 
 traffic = Traffic()
 enemies = py.sprite.Group()
@@ -117,6 +137,8 @@ timecnt = 0
 
 bg = Backgound()
 while 1:
+    if player.health == 0:
+        end_game()
     clock.tick(FPS)
     timecnt += 1
     for event in py.event.get():
@@ -130,14 +152,17 @@ while 1:
         for j in range(i, len(enemies)):
             if enemies.sprites()[i].rect.colliderect(enemies.sprites()[j].rect):
                 enemies.sprites()[j].speed = enemies.sprites()[i].speed
-    #if trafhits:
-        #print(trafhits[0])
-        #trafhits[0].speed = trafhits[1].speed
+
     if len(enemies.sprites()) < 4 and timecnt % FPS == 0:
         tr = pool.sprites()[randint(0, len(pool.sprites()) - 1)]
         pool.remove(tr)
         all_sprites.add(tr)
         enemies.add(tr)
+
+    playercrash = py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.82))
+    if playercrash:
+        player.crash()
+
 
     bg.update(screen)
 
