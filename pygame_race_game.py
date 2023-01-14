@@ -12,6 +12,30 @@ py.display.set_caption("Car race")
 screen = py.display.set_mode((FrameWidth,
                               FrameHeight))
 FPS = 35
+game_continues = True
+
+
+class Hud(py.sprite.Sprite):
+    def __init__(self):
+        py.sprite.Sprite.__init__(self)
+        self.hudmass = []
+        self.hearts = 6
+        for i in range(7):
+            curhud = py.image.load('/home/linuxlite/PycharmProjects/race_game_on_pygame/hud' + str(i) + '.png')
+            curhud = py.transform.scale(curhud, (95, 30))
+            self.hudmass.append(curhud)
+        self.image = self.hudmass[self.hearts]
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.rect.width // 2 + 15, self.rect.height // 2 + 20)
+
+    def update(self):
+        self.image = self.hudmass[self.hearts]
+
+    def sethealth(self, num):
+        if num < 0 or num > 6:
+            end_game()
+            return
+        self.hearts = num
 
 
 class Traffic(py.sprite.Sprite):
@@ -60,8 +84,9 @@ class Backgound:
 
 
 class Player(py.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, f_hud):
         py.sprite.Sprite.__init__(self)
+        self.f_hud = f_hud
         self.image = py.image.load("/home/linuxlite/Templates/pygame car game/player car.svg")
         self.image.set_colorkey((0, 0, 0))
         self.image = py.transform.rotate(self.image, 90)
@@ -100,7 +125,6 @@ class Player(py.sprite.Sprite):
                 self.rect.center = (x + self.stepgor, y)
             else:
                 self.rect.center = (rightborder - self.rect.width / 2, y)
-        print(self.blink)
         if self.blink > 0:
             self.blink -= 1
             if self.blink % 3 == 0:
@@ -115,18 +139,39 @@ class Player(py.sprite.Sprite):
             return
         self.blink = 2 * FPS
         self.health -= 1
+        if self.f_hud:
+            self.f_hud(self.health)
+
+
+class EndGameImg(py.sprite.Sprite):
+    def __init__(self):
+        py.sprite.Sprite.__init__(self)
+        self.image = py.image.load('gameoverimg.png').convert()
+        self.image = py.transform.scale(self.image, (500, 500))
+        self.image.set_colorkey((0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.rect.width // 2 + 150, self.rect.height // 2 + 150)
 
 
 def end_game():
-    pass
+    global endgamegroup
+    global endgameimg
+    global game_continues
+    game_continues = False
+    endgamegroup = py.sprite.Group()
+    endgameimg = EndGameImg()
+    endgamegroup.add(endgameimg)
+
+
 
 traffic = Traffic()
 enemies = py.sprite.Group()
 enemies.add(traffic)
+health = Hud()
 
 all_sprites = py.sprite.Group()
-player = Player()
-all_sprites.add(player, traffic)
+player = Player(health.sethealth)
+all_sprites.add(player, traffic, health)
 
 #reserve
 pool = py.sprite.Group()
@@ -137,8 +182,6 @@ timecnt = 0
 
 bg = Backgound()
 while 1:
-    if player.health == 0:
-        end_game()
     clock.tick(FPS)
     timecnt += 1
     for event in py.event.get():
@@ -148,27 +191,29 @@ while 1:
             player.update()
 
     # print(py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.87)))
-    for i in range(len(enemies)):
-        for j in range(i, len(enemies)):
-            if enemies.sprites()[i].rect.colliderect(enemies.sprites()[j].rect):
-                enemies.sprites()[j].speed = enemies.sprites()[i].speed
+    if game_continues:
+        for i in range(len(enemies)):
+            for j in range(i, len(enemies)):
+                if enemies.sprites()[i].rect.colliderect(enemies.sprites()[j].rect):
+                    enemies.sprites()[j].speed = enemies.sprites()[i].speed
 
-    if len(enemies.sprites()) < 4 and timecnt % FPS == 0:
-        tr = pool.sprites()[randint(0, len(pool.sprites()) - 1)]
-        pool.remove(tr)
-        all_sprites.add(tr)
-        enemies.add(tr)
+        if len(enemies.sprites()) < 4 and timecnt % FPS == 0:
+            tr = pool.sprites()[randint(0, len(pool.sprites()) - 1)]
+            pool.remove(tr)
+            all_sprites.add(tr)
+            enemies.add(tr)
 
-    playercrash = py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.82))
-    if playercrash:
-        player.crash()
+        playercrash = py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.82))
+        if playercrash:
+            player.crash()
 
+        bg.update(screen)
 
-    bg.update(screen)
-
-    all_sprites.update()
-    all_sprites.draw(screen)
-
+        all_sprites.update()
+        all_sprites.draw(screen)
+    else:
+        endgameimg.update()
+        endgamegroup.draw(screen)
     py.display.flip()
 
 py.quit()
