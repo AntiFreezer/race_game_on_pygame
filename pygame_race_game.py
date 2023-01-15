@@ -143,6 +143,43 @@ class Player(py.sprite.Sprite):
             self.f_hud(self.health)
 
 
+class Button(py.sprite.Sprite):
+    def __init__(self, color, x, y, width, height, text=''):
+        py.sprite.Sprite.__init__(self)
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+        self.image = py.Surface((self.width, self.height))
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x + self.width // 2, self.y + self.height // 2)
+
+    def draw(self, win, outline=None):
+        if outline:
+            py.draw.rect(win, outline, (self.x - 2, self.y - 2, self.width + 4, self.height + 4))
+
+        py.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
+
+        if self.text != '':
+            font = py.font.SysFont('console', 60, bold=True)
+            text = font.render(self.text, True, (0, 0, 0))
+            win.blit(text,
+                     (self.x + (self.width / 2 - text.get_width() / 2),
+                      self.y + (self.height / 2 - text.get_height() / 2)))
+
+    def is_over(self):
+        pos = py.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            self.color = (255, 100, 0)
+            return True
+        else:
+            self.color = (255, 255, 0)
+
+        return False
+
+
 class EndGameImg(py.sprite.Sprite):
     def __init__(self):
         py.sprite.Sprite.__init__(self)
@@ -157,12 +194,29 @@ def end_game():
     global endgamegroup
     global endgameimg
     global game_continues
+    global button
     game_continues = False
     endgamegroup = py.sprite.Group()
     endgameimg = EndGameImg()
     endgamegroup.add(endgameimg)
+    button = Button((255, 255, 0), 195, 650, 450, 100, 'New game')
 
 
+def new_game():
+    global health
+    global game_continues
+    global player
+    player.kill()
+    health.kill()
+    for i in all_sprites.sprites():
+        i.reset()
+        all_sprites.remove(i)
+        enemies.remove(i)
+        pool.add(i)
+    health = Hud()
+    player = Player(health.sethealth)
+    all_sprites.add(player, health)
+    game_continues = True
 
 traffic = Traffic()
 enemies = py.sprite.Group()
@@ -189,12 +243,14 @@ while 1:
             quit()
         if event.type == py.KEYDOWN:
             player.update()
+        if not game_continues and event.type == py.MOUSEBUTTONDOWN and button.is_over():
+            new_game()
 
-    # print(py.sprite.spritecollide(player, enemies, False, py.sprite.collide_rect_ratio(0.87)))
     if game_continues:
         for i in range(len(enemies)):
             for j in range(i, len(enemies)):
                 if enemies.sprites()[i].rect.colliderect(enemies.sprites()[j].rect):
+                    print(enemies.sprites())
                     enemies.sprites()[j].speed = enemies.sprites()[i].speed
 
         if len(enemies.sprites()) < 4 and timecnt % FPS == 0:
@@ -212,8 +268,10 @@ while 1:
         all_sprites.update()
         all_sprites.draw(screen)
     else:
+        button.is_over()
         endgameimg.update()
         endgamegroup.draw(screen)
+        button.draw(screen, (0, 0, 0))
     py.display.flip()
 
 py.quit()
