@@ -29,7 +29,7 @@ class Hud(py.sprite.Sprite):
         self.hudmass = []
         self.hearts = 6
         for i in range(7):
-            curhud = py.image.load('/home/linuxlite/PycharmProjects/race_game_on_pygame/hud' + str(i) + '.png')
+            curhud = py.image.load('hud' + str(i) + '.png')
             curhud = py.transform.scale(curhud, (95, 30))
             self.hudmass.append(curhud)
         self.image = self.hudmass[self.hearts]
@@ -50,10 +50,11 @@ class Hud(py.sprite.Sprite):
 class Traffic(py.sprite.Sprite):
     def __init__(self):
         py.sprite.Sprite.__init__(self)
-        img1 = "/home/linuxlite/Templates/pygame car game/car traffic1.svg"
-        img2 = "/home/linuxlite/Templates/pygame car game/car traffic2.svg"
+        img1 = "car_traffic1.svg"
+        img2 = "car_traffic2.svg"
         cars = [img1, img2]
-        self.image = py.image.load(choice(cars))
+        temp = choice(cars)
+        self.image = py.image.load(temp)
         self.image.set_colorkey((0, 0, 0))
         self.image = py.transform.rotate(self.image, 270)
         self.image = py.transform.scale(self.image, (90, 180))
@@ -76,7 +77,7 @@ class Traffic(py.sprite.Sprite):
 
 class Backgound:
     def __init__(self):
-        self.image = py.image.load("/home/linuxlite/Templates/pygame car game/background-1.png").convert()
+        self.image = py.image.load("background.png").convert()
         self.scroll = 0
         self.tiles = FrameHeight // self.image.get_height()
         self.starty = self.tiles * self.image.get_height()
@@ -96,7 +97,7 @@ class Player(py.sprite.Sprite):
     def __init__(self, f_hud):
         py.sprite.Sprite.__init__(self)
         self.f_hud = f_hud
-        self.image = py.image.load("/home/linuxlite/Templates/pygame car game/player car.svg")
+        self.image = py.image.load("car_player.svg")
         self.image.set_colorkey((0, 0, 0))
         self.image = py.transform.rotate(self.image, 90)
         self.image = py.transform.scale(self.image, (80, 160))
@@ -230,6 +231,7 @@ def new_game():
     player = Player(health.sethealth)
     all_sprites.add(player, health)
     game_continues = True
+
 
 start_game()
 traffic = Traffic()
