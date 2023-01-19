@@ -261,8 +261,9 @@ while 1:
             if start_game_but.is_over((0, 255, 255)):
                 game_continues = True
                 start_game_but = False
-        if not game_continues and event.type == py.MOUSEBUTTONDOWN and button.is_over((255, 255, 0)):
-            new_game()
+        if event.type == py.MOUSEBUTTONDOWN and endgamestat:
+            if button.is_over((255, 255, 0)):
+                new_game()
 
     if game_continues:
         for i in range(len(enemies)):
