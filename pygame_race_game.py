@@ -5,7 +5,7 @@ py.init()
 
 clock = py.time.Clock()
 
-FrameHeight = 870
+FrameHeight = 720
 FrameWidth = 840
 
 py.display.set_caption("Car race")
@@ -19,7 +19,9 @@ endgamestat = False
 def start_game():
     global game_continues
     global start_game_but
-    start_game_but = Button((0, 255, 255), 155, 400, 515, 100, 'Start the game')
+    start_game_but = Button((0, 255, 255),
+                            FrameWidth // 2 - 515 // 2,
+                            FrameHeight // 2 - 100 // 2, 515, 100, 'Start the game')
     game_continues = False
 
 
@@ -194,10 +196,11 @@ class EndGameImg(py.sprite.Sprite):
     def __init__(self):
         py.sprite.Sprite.__init__(self)
         self.image = py.image.load('gameoverimg.png').convert()
-        self.image = py.transform.scale(self.image, (500, 500))
+        self.image = py.transform.scale(self.image, (FrameWidth // 1.5, FrameHeight // 1.5))
         self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect()
-        self.rect.center = (self.rect.width // 2 + 150, self.rect.height // 2 + 150)
+        self.rect.center = (FrameWidth // 2,
+                            FrameHeight // 2)
 
 
 def end_game():
@@ -211,7 +214,9 @@ def end_game():
     endgamegroup = py.sprite.Group()
     endgameimg = EndGameImg()
     endgamegroup.add(endgameimg)
-    button = Button((255, 255, 0), 195, 650, 450, 100, 'New game')
+    button = Button((255, 255, 0),
+                    FrameWidth // 2 - endgameimg.rect.width // 2.5,
+                    FrameHeight // 2 + endgameimg.rect.height // 2, 450, 100, 'New game')
 
 
 def new_game():
